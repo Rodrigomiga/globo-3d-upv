@@ -3,34 +3,28 @@ var cameraControls;
 var globo, helice;
 var playerIndicator; 
 
-// --- VARIABLES PARA SHADERS Y MENÚ ---
 var composer, water, bloomPass;
 var guiControls;
 
-// --- CONTROLES DE MOVIMIENTO ---
 var moveAdelante = false, moveAtras = false, moveIzquierda = false, moveDerecha = false, moveArriba = false, moveAbajo = false;
 
 var flameGroup, flameMesh, flameLight;
 var smokeParticles = [];
 
-// --- VARIABLES PARA COLISIONES ---
 var globoColliderVisual; 
 const RADIO_GLOBO = 25;  
 const RADIO_ARO = 35;    
 
-// --- FÍSICAS Y VIENTO ---
 var velocity = { x: 0, y: 0, z: 0 };
 var friccion = 0.94; 
 var aceleracion = 0.08; 
 var windAngle = 0;
 
-// --- ENTORNO ---
 var heightData = null;
 var imgW, imgH;
 const displacementScale = 120;
 const MAP_SIZE = 3000; 
 
-// --- VARIABLES DE ESTADO DE JUEGO ---
 var puntos = 0; 
 var aros = [];
 var soundBurner, soundWind;
@@ -44,7 +38,6 @@ loadScene();
 render();
 
 function init() {
-    // --- GESTOR DE CARGA (LoadingManager) ---
     THREE.DefaultLoadingManager.onLoad = function () {
         const btnPlay = document.getElementById('btnPlay');
         btnPlay.innerText = "JUGAR";
@@ -67,7 +60,6 @@ function init() {
         });
     };
 
-    // --- RENDERER ---
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
@@ -80,19 +72,16 @@ function init() {
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0xd8e7ff, 800, 2800);
 
-    // --- CÁMARA PRINCIPAL ---
     var aspectRatio = window.innerWidth / window.innerHeight;
     camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 10000);
     camera.position.set(0, 500, 1000);
     camera.layers.disable(1); 
 
-    // --- CÁMARA ORTOGRÁFICA (MINIMAPA) ---
     mapCamera = new THREE.OrthographicCamera(-400, 400, 400, -400, 1, 2000);
     mapCamera.position.set(0, 1000, 0);
     mapCamera.lookAt(0, 0, 0);
     mapCamera.layers.enable(1); 
 
-    // --- CONTROLES DE CÁMARA ---
     cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
     cameraControls.enableDamping = true;
     cameraControls.dampingFactor = 0.05;
@@ -102,11 +91,9 @@ function init() {
     cameraControls.autoRotate = true;
     cameraControls.autoRotateSpeed = 1.0;
     
-    // --- LÍMITES DE ZOOM DE LA CÁMARA ---
-    cameraControls.maxDistance = 2500; // Tope máximo para alejar la cámara
-    cameraControls.minDistance = 200;  // Tope mínimo para no meterte dentro del globo
+    cameraControls.maxDistance = 2500; 
+    cameraControls.minDistance = 200;  
 
-    // --- ILUMINACIÓN ---
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
@@ -132,7 +119,6 @@ function init() {
     sunGroup.position.copy(directionalLight.position);
     scene.add(sunGroup);
 
-    // --- POST-PROCESADO (BLOOM) ---
     const renderScene = new THREE.RenderPass(scene, camera);
     bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
     bloomPass.threshold = 1.0;  
@@ -143,7 +129,6 @@ function init() {
     composer.addPass(renderScene);
     composer.addPass(bloomPass);
 
-    // --- MONITOR DE RENDIMIENTO (STATS) ---
     if (typeof Stats !== 'undefined') {
         stats = new Stats();
         stats.showPanel(0);
@@ -155,7 +140,6 @@ function init() {
         document.body.appendChild(stats.domElement);
     }
 
-    // --- INTERFAZ DAT.GUI ---
     guiControls = {
         acel: 0.08,
         fricc: 0.94,
@@ -188,7 +172,6 @@ function init() {
         gui.close();
     }
 
-    // --- INDICADOR DEL MINIMAPA ---
     playerIndicator = new THREE.Mesh(
         new THREE.SphereGeometry(25, 16, 16),
         new THREE.MeshBasicMaterial({ color: 0xff0000 })
@@ -196,7 +179,6 @@ function init() {
     playerIndicator.layers.set(1); 
     scene.add(playerIndicator);
 
-    // --- VISUALIZADOR DE COLISIONES DEL GLOBO ---
     globoColliderVisual = new THREE.Mesh(
         new THREE.SphereGeometry(RADIO_GLOBO, 16, 16),
         new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
@@ -204,7 +186,6 @@ function init() {
     globoColliderVisual.visible = false; 
     scene.add(globoColliderVisual);
 
-    // --- AUDIO ---
     const listener = new THREE.AudioListener();
     camera.add(listener);
 
@@ -265,7 +246,6 @@ function loadScene() {
     water.position.y = 8; 
     scene.add(water);
 
-    // --- GENERACIÓN DE AROS ---
     const aroGeo = new THREE.TorusGeometry(RADIO_ARO, 2, 16, 40);
     const aroMat = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffaa00, emissiveIntensity: 1.0 }); 
     for (let i = 0; i < 10; i++) {
@@ -287,7 +267,6 @@ function loadScene() {
         aros.push(aro);
     }
 
-    // --- GENERACIÓN DE ÁRBOLES Y ALTURAS ---
     const img = new Image();
     img.src = 'assets/heihtmap.png';
     img.onload = function() {
@@ -323,7 +302,6 @@ function loadScene() {
         }
     };
 
-    // --- CARGA DEL GLOBO ---
     const gltfLoader = new THREE.GLTFLoader();
     gltfLoader.load('assets/hot_air_balloon.glb', function(gltf) {
         globo = gltf.scene;
@@ -367,7 +345,6 @@ function loadScene() {
     });
 }
 
-// --- CONTROLES DE TECLADO ---
 function onKeyDown(event) {
     switch(event.key.toLowerCase()) {
         case 'w': case 'arrowup': moveAdelante = true; break;
@@ -420,12 +397,10 @@ function updateHUD(windStrength) {
     document.getElementById('vientoDir').innerText = dir;
 }
 
-// --- BUCLE PRINCIPAL LÓGICO ---
 function update() {
     cameraControls.update();
     if (globo) {
         
-        // --- LÓGICA DE VICTORIA ---
         if (puntos >= 10 && !juegoTerminado) {
             juegoTerminado = true;
             
@@ -443,7 +418,6 @@ function update() {
             if (flameMesh) { flameMesh.visible = false; flameLight.visible = false; }
         }
 
-        // --- MOVIMIENTO (Solo si ha empezado y no ha terminado) ---
         if (juegoIniciado && !juegoTerminado) {
             if (moveAdelante) velocity.z -= aceleracion;
             if (moveAtras) velocity.z += aceleracion;
@@ -467,20 +441,18 @@ function update() {
 
         let force = 0;
 
-        // --- VIENTO Y FÍSICAS ---
         if (juegoIniciado) {
             windAngle += 0.001; 
             force = (Math.sin(Date.now() * 0.0003) + 1.0) * guiControls.fuerzaViento; 
             
             if (juegoTerminado) {
                 force *= 0.1; 
-                friccion = 0.98; // Frena al ganar
+                friccion = 0.98; 
             }
 
             velocity.x += Math.cos(windAngle) * force;
             velocity.z += Math.sin(windAngle) * force;
 
-            // --- TOPE DE INCLINACIÓN ---
             const MAX_TILT = 0.35; 
             globo.rotation.z = Math.max(-MAX_TILT, Math.min(MAX_TILT, velocity.x * -0.5));
             globo.rotation.x = Math.max(-MAX_TILT, Math.min(MAX_TILT, velocity.z * 0.5));
@@ -491,14 +463,12 @@ function update() {
         globo.position.z += velocity.z;
         velocity.x *= friccion; velocity.y *= friccion; velocity.z *= friccion;
 
-        // --- ACTUALIZAR MINIMAPA ---
         if (mapCamera && playerIndicator) {
             mapCamera.position.x = globo.position.x;
             mapCamera.position.z = globo.position.z;
             playerIndicator.position.set(globo.position.x, globo.position.y + 150, globo.position.z);
         }
 
-        // --- COLISIONES CON EL SUELO ---
         if (heightData) {
             let u = Math.floor((((globo.position.x + MAP_SIZE/2) % (MAP_SIZE/2)) / (MAP_SIZE/2)) * imgW);
             let v = Math.floor((((globo.position.z + MAP_SIZE/2) % (MAP_SIZE/2)) / (MAP_SIZE/2)) * imgH);
@@ -510,7 +480,6 @@ function update() {
             }
         }
 
-        // --- COLISIONES FORMALES (BOUNDING SPHERES) ---
         if (globoColliderVisual) {
             globoColliderVisual.position.set(globo.position.x, globo.position.y + 15, globo.position.z);
             globoColliderVisual.visible = guiControls.debugColisiones;
@@ -538,7 +507,6 @@ function update() {
             }
         });
 
-        // --- ANIMACIONES VARIAS ---
         if (water) water.position.y = 8 + Math.sin(Date.now() * 0.001) * 0.5;
 
         for (let i = smokeParticles.length - 1; i >= 0; i--) {
@@ -558,7 +526,6 @@ function update() {
     }
 }
 
-// --- BUCLE DE RENDERIZADO ---
 function render() {
     requestAnimationFrame(render);
     update();
