@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Globo Aerostático - AGM UPV</title>
+    <style>
+        body {
+            background-color: #87CEEB;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace; 
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #hud {
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            color: white; 
+            background: rgba(0,0,0,0.5); 
+            padding: 15px; 
+            border-radius: 10px; 
+            pointer-events: none; 
+            border: 1px solid #ffaa00;
+            z-index: 100;
+            display: none; 
+        }
+        
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px); 
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        #startScreen h1 {
+            font-size: 60px;
+            color: #ffaa00;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.8);
+            margin-bottom: 10px;
+        }
+
+        #startScreen h3 {
+            font-size: 22px;
+            color: #aaa;
+            margin-bottom: 50px;
+            font-weight: normal;
+        }
+
+        #startScreen p {
+            font-size: 20px;
+            margin-bottom: 50px;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        #btnPlay {
+            padding: 20px 60px;
+            font-size: 28px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            background-color: #ff4444; 
+            color: #fff;
+            border: 3px solid #fff;
+            border-radius: 15px;
+            cursor: not-allowed;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        #btnPlay:not(:disabled):hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0,255,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <div id="startScreen">
+        <h1>VUELO LIBRE EN GLOBO</h1>
+        <h3>Universitat Politècnica de València (UPV)</h3>
+        
+        <p>
+            Desarrollado por:<br>
+            <b style="font-size: 28px; color: #fff;">Rodrigo Minaya García</b>
+        </p>
+
+        <button id="btnPlay" disabled>CARGANDO RECURSOS...</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.140.0/examples/js/shaders/CopyShader.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+
+    <script src="js/main.js"></script>
+
+    <div id="hud">
+        <div style="font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #ffaa00;">INSTRUMENTOS</div>
+        <div>ALTITUD: <span id="altitud">0</span> m</div>
+        <div>VEL. HORIZ: <span id="velocidad">0</span> km/h</div>
+        <div>VEL. VERT: <span id="velVert">0</span> m/s</div>
+        <div>VIENTO: <span id="vientoVal">0</span> km/h (<span id="vientoDir">--</span>)</div>
+        
+        <div style="color: #ffff00; font-weight: bold; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
+            AROS: <span id="puntos">0</span> / 10
+        </div>
+        
+        <div style="margin-top: 10px; font-size: 12px; color: #aaa;">
+            CONTROLES: WASD + QE<br>
+            El Audio está activado.
+        </div>
+    </div>
+</body>
+</html>
